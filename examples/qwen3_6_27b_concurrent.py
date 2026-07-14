@@ -50,6 +50,8 @@ MODEL_PATH = os.environ.get("MODEL_PATH", "/models/Qwen3.6-27B")
 TP_SIZE = int(os.environ.get("TP_SIZE", "4" if _is_npu else "1"))
 MAX_TOKENS = int(os.environ.get("MAX_TOKENS", "256"))
 CONCURRENT_N = int(os.environ.get("CONCURRENT_N", "16"))
+MEM_FRACTION = float(os.environ.get("MEM_FRACTION", "0.85"))
+MM_ATTENTION_BACKEND = os.environ.get("MM_ATTENTION_BACKEND", "")
 
 _HERE = Path(__file__).resolve().parent
 IMAGE_DIR = Path(os.environ.get("IMAGE_DIR", _HERE / "test_images"))
@@ -66,6 +68,9 @@ elif _is_npu:
     }
 else:
     _extra_engine_kwargs = {"trust_remote_code": True}
+
+if MM_ATTENTION_BACKEND:
+    _extra_engine_kwargs["mm_attention_backend"] = MM_ATTENTION_BACKEND
 
 # ─── Test data ────────────────────────────────────────────────────────────────
 
@@ -175,7 +180,7 @@ def _make_engine():
     return Engine(
         model_path=MODEL_PATH,
         tp_size=TP_SIZE,
-        mem_fraction_static=0.85,
+        mem_fraction_static=MEM_FRACTION,
         disable_cuda_graph=True,
         disable_piecewise_cuda_graph=True,
         **_extra_engine_kwargs,
