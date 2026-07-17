@@ -40,6 +40,8 @@ TP_SIZE = int(os.environ.get("TP_SIZE", "4" if _is_npu else "1"))
 MAX_TOKENS = int(os.environ.get("MAX_TOKENS", "10"))
 MEM_FRACTION = float(os.environ.get("MEM_FRACTION", "0.85"))
 MM_ATTENTION_BACKEND = os.environ.get("MM_ATTENTION_BACKEND", "")
+ATTENTION_BACKEND = os.environ.get("ATTENTION_BACKEND", "")
+DISABLE_CUDA_GRAPH = os.environ.get("ENABLE_CUDA_GRAPH", "0") != "1"
 
 _HERE = Path(__file__).resolve().parent
 IMAGE_DIR = Path(os.environ.get("IMAGE_DIR", _HERE / "test_images"))
@@ -61,6 +63,8 @@ else:
 
 if MM_ATTENTION_BACKEND:
     _extra_engine_kwargs["mm_attention_backend"] = MM_ATTENTION_BACKEND
+if ATTENTION_BACKEND:
+    _extra_engine_kwargs["attention_backend"] = ATTENTION_BACKEND
 
 TEXT_PROMPTS = [
     "How many states are there in the United States?",
@@ -156,7 +160,7 @@ def run_engine():
         model_path=MODEL_PATH,
         tp_size=TP_SIZE,
         mem_fraction_static=MEM_FRACTION,
-        disable_cuda_graph=True,
+        disable_cuda_graph=DISABLE_CUDA_GRAPH,
         disable_piecewise_cuda_graph=True,
         **_extra_engine_kwargs,
     )

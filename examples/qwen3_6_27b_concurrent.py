@@ -52,6 +52,8 @@ MAX_TOKENS = int(os.environ.get("MAX_TOKENS", "256"))
 CONCURRENT_N = int(os.environ.get("CONCURRENT_N", "16"))
 MEM_FRACTION = float(os.environ.get("MEM_FRACTION", "0.85"))
 MM_ATTENTION_BACKEND = os.environ.get("MM_ATTENTION_BACKEND", "")
+ATTENTION_BACKEND = os.environ.get("ATTENTION_BACKEND", "")
+DISABLE_CUDA_GRAPH = os.environ.get("ENABLE_CUDA_GRAPH", "0") != "1"
 
 _HERE = Path(__file__).resolve().parent
 IMAGE_DIR = Path(os.environ.get("IMAGE_DIR", _HERE / "test_images"))
@@ -71,6 +73,8 @@ else:
 
 if MM_ATTENTION_BACKEND:
     _extra_engine_kwargs["mm_attention_backend"] = MM_ATTENTION_BACKEND
+if ATTENTION_BACKEND:
+    _extra_engine_kwargs["attention_backend"] = ATTENTION_BACKEND
 
 # ─── Test data ────────────────────────────────────────────────────────────────
 
@@ -181,7 +185,7 @@ def _make_engine():
         model_path=MODEL_PATH,
         tp_size=TP_SIZE,
         mem_fraction_static=MEM_FRACTION,
-        disable_cuda_graph=True,
+        disable_cuda_graph=DISABLE_CUDA_GRAPH,
         disable_piecewise_cuda_graph=True,
         **_extra_engine_kwargs,
     )
@@ -401,7 +405,7 @@ if __name__ == "__main__":
 
     print(
         f"Model: {MODEL_PATH} | TP: {TP_SIZE} | CONCURRENT_N: {CONCURRENT_N}\n"
-        f"cuda_graph disabled — throughput numbers reflect that.\n"
+        f"cuda_graph {'disabled' if DISABLE_CUDA_GRAPH else 'enabled'} — throughput numbers reflect that.\n"
     )
 
     engine = _make_engine()
